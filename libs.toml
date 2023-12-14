@@ -5,6 +5,8 @@ lifecycleRuntime = "2.3.1"
 activityCompose = "1.5.1"
 composeBom = "2022.10.00"
 material3 = "1.1.2"
+retrofit2 = "2.9.0"
+viewmodelCompose = "2.6.2"
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core" }
@@ -13,5 +15,9 @@ lifecycle-runtime = { group = "androidx.lifecycle", name = "lifecycle-runtime", 
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+retrofit2 = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit2" }
+converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit2" }
+viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "viewmodelCompose" }
 
 [bundles]
+retrofit = ["retrofit2", "converter-gson"]
