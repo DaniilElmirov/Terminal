@@ -1,12 +1,12 @@
 package com.elmirov.terminal.presentation
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.elmirov.terminal.presentation.TerminalScreenState.*
+import com.elmirov.terminal.presentation.TerminalScreenState.Content
+import com.elmirov.terminal.presentation.TerminalScreenState.Initial
 import com.elmirov.terminal.ui.theme.TerminalTheme
 
 class MainActivity : ComponentActivity() {
@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
                     Initial -> Unit
 
                     is Content -> {
-                        Log.d("MainActivity", currentState.bars.toString())
+                        Terminal(bars = currentState.bars)
                     }
                 }
             }
