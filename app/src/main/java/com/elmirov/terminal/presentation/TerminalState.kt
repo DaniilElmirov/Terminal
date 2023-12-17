@@ -12,19 +12,27 @@ import kotlin.math.roundToInt
 @Parcelize
 data class TerminalState(
     val bars: List<Bar>,
-    val terminalWidth: Float = 0f,
+    val terminalWidth: Float = 1f,
+    val terminalHeight: Float = 1f,
     val visibleBarCount: Int = 100,
     val scrollBy: Float = 0f,
-): Parcelable {
+) : Parcelable {
     val barWidth: Float
         get() = terminalWidth / visibleBarCount
 
-    val visibleBars: List<Bar>
+    private val visibleBars: List<Bar>
         get() {
             val startIndex = (scrollBy / barWidth).roundToInt().coerceAtLeast(0)
             val endIndex = (startIndex + visibleBarCount).coerceAtMost(bars.size)
             return bars.subList(startIndex, endIndex)
         }
+
+    val min: Float
+        get() = visibleBars.minOf { it.low }
+    val max: Float
+        get() = visibleBars.maxOf { it.high }
+    val pxPerPoint: Float
+        get() = terminalHeight / (max - min)
 }
 
 @Composable
