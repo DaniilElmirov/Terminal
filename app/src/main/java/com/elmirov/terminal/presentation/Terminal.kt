@@ -71,7 +71,12 @@ fun Terminal(
                 )
             }
 
-            TimeFrames(selectedFrame = HOUR_1, onTimeFrameSelected = {})
+            TimeFrames(
+                selectedFrame = currentState.timeFrame,
+                onTimeFrameSelected = {
+                    viewModel.getBars(it)
+                },
+            )
         }
 
         TerminalScreenState.Loading -> {

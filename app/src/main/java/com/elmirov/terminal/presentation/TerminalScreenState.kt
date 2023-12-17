@@ -10,5 +10,6 @@ sealed interface TerminalScreenState {
 
     data class Content(
         val bars: List<Bar>,
+        val timeFrame: TimeFrame,
     ) : TerminalScreenState
 }
