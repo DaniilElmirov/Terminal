@@ -16,12 +16,19 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.elmirov.terminal.data.model.Bar
 import kotlin.math.roundToInt
 
 private const val MIN_VISIBLE_BAR_COUNT = 20
 
+@OptIn(ExperimentalTextApi::class)
 @Composable
 fun Terminal(
     bars: List<Bar>,
@@ -38,6 +45,8 @@ fun Terminal(
 
         terminalState = terminalState.copy(visibleBarCount = visibleBarCount, scrollBy = scrollBy)
     }
+
+    val textMeasurer = rememberTextMeasurer()
 
     Canvas(
         modifier = Modifier
@@ -80,34 +89,55 @@ fun Terminal(
         bars.firstOrNull()?.let {
             drawPricesLine(
                 min = min,
+                max = max,
                 pxPerPoint = pxPerPoint,
                 lastPrice = it.close,
+                textMeasurer = textMeasurer,
             )
         }
     }
 }
 
+@OptIn(ExperimentalTextApi::class)
 private fun DrawScope.drawPricesLine(
     min: Float,
+    max: Float,
     pxPerPoint: Float,
     lastPrice: Float,
+    textMeasurer: TextMeasurer,
 ) {
     //max
     drawDashLine(
         start = Offset(0f, 0f),
         end = Offset(size.width, 0f),
     )
+    drawPrice(
+        textMeasurer = textMeasurer,
+        price = max,
+        offsetY = 0f,
+    )
 
     //last price
+    val lastPriceOffsetY = size.height - ((lastPrice - min) * pxPerPoint)
     drawDashLine(
-        start = Offset(0f, size.height - ((lastPrice - min) * pxPerPoint)),
-        end = Offset(size.width, size.height - ((lastPrice - min) * pxPerPoint)),
+        start = Offset(0f, lastPriceOffsetY),
+        end = Offset(size.width, lastPriceOffsetY),
+    )
+    drawPrice(
+        textMeasurer = textMeasurer,
+        price = lastPrice,
+        offsetY = lastPriceOffsetY,
     )
 
     //min
     drawDashLine(
         start = Offset(0f, size.height),
         end = Offset(size.width, size.height),
+    )
+    drawPrice(
+        textMeasurer = textMeasurer,
+        price = min,
+        offsetY = size.height,
     )
 }
 
@@ -125,5 +155,24 @@ private fun DrawScope.drawDashLine(
         pathEffect = PathEffect.dashPathEffect(
             intervals = floatArrayOf(4.dp.toPx(), 4.dp.toPx())
         ),
+    )
+}
+
+@OptIn(ExperimentalTextApi::class)
+private fun DrawScope.drawPrice(
+    textMeasurer: TextMeasurer,
+    price: Float,
+    offsetY: Float,
+) {
+    val textLayoutResult = textMeasurer.measure(
+        text = price.toString(),
+        style = TextStyle(
+            color = Color.White,
+            fontSize = 12.sp,
+        ),
+    )
+    drawText(
+        textLayoutResult = textLayoutResult,
+        topLeft = Offset(size.width - textLayoutResult.size.width, offsetY),
     )
 }
