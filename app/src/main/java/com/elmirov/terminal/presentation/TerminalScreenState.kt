@@ -6,6 +6,8 @@ sealed interface TerminalScreenState {
 
     object Initial : TerminalScreenState
 
+    object Loading : TerminalScreenState
+
     data class Content(
         val bars: List<Bar>,
     ) : TerminalScreenState

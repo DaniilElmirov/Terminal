@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.elmirov.terminal.data.network.ApiFactory
 import com.elmirov.terminal.presentation.TerminalScreenState.Content
 import com.elmirov.terminal.presentation.TerminalScreenState.Initial
+import com.elmirov.terminal.presentation.TerminalScreenState.Loading
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,6 +28,8 @@ class TerminalViewModel : ViewModel() {
     }
 
     private fun getBars() {
+        _state.value = Loading
+
         viewModelScope.launch(exceptionHandler) {
             val bars = apiService.getBars().bars
             _state.value = Content(bars = bars)
