@@ -4,10 +4,16 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -20,6 +26,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
@@ -28,6 +35,8 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.elmirov.terminal.R
+import com.elmirov.terminal.presentation.TimeFrame.*
 import kotlin.math.roundToInt
 
 private const val MIN_VISIBLE_BAR_COUNT = 20
@@ -61,6 +70,8 @@ fun Terminal(
                     lastPrice = it.close
                 )
             }
+
+            TimeFrames(selectedFrame = HOUR_1, onTimeFrameSelected = {})
         }
 
         TerminalScreenState.Loading -> {
@@ -72,6 +83,42 @@ fun Terminal(
             ) {
                 CircularProgressIndicator()
             }
+        }
+    }
+}
+
+@Composable
+private fun TimeFrames(
+    selectedFrame: TimeFrame,
+    onTimeFrameSelected: (TimeFrame) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .wrapContentSize()
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        values().forEach { timeFrame ->
+            val labelResId =
+                when (timeFrame) {
+                    MIN_5 -> R.string.timeframe_5_minutes
+                    MIN_15 -> R.string.timeframe_15_minutes
+                    MIN_30 -> R.string.timeframe_30_minutes
+                    HOUR_1 -> R.string.timeframe_1_hour
+                }
+
+            val isSelected = timeFrame == selectedFrame
+
+            AssistChip(
+                onClick = { onTimeFrameSelected(timeFrame) },
+                label = {
+                    Text(text = stringResource(id = labelResId))
+                },
+                colors = AssistChipDefaults.assistChipColors(
+                    containerColor = if (isSelected) Color.White else Color.Black,
+                    labelColor = if (isSelected) Color.Black else Color.White,
+                ),
+            )
         }
     }
 }
