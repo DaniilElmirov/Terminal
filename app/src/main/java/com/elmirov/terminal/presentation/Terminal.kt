@@ -36,7 +36,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.elmirov.terminal.R
+import com.elmirov.terminal.data.model.Bar
 import com.elmirov.terminal.presentation.TimeFrame.*
+import java.util.Calendar
+import java.util.Locale
 import kotlin.math.roundToInt
 
 private const val MIN_VISIBLE_BAR_COUNT = 20
@@ -60,7 +63,8 @@ fun Terminal(
                 terminalState = terminalState,
                 onTerminalStateChange = {
                     terminalState.value = it
-                }
+                },
+                timeFrame = currentState.timeFrame,
             )
 
             currentState.bars.firstOrNull()?.let {
@@ -128,11 +132,13 @@ private fun TimeFrames(
     }
 }
 
+@OptIn(ExperimentalTextApi::class)
 @Composable
 private fun Chart(
     modifier: Modifier = Modifier,
     terminalState: State<TerminalState>,
     onTerminalStateChange: (TerminalState) -> Unit,
+    timeFrame: TimeFrame,
 ) {
     val currentState = terminalState.value
     val transformableState = rememberTransformableState { zoomChange, panChange, _ ->
@@ -149,6 +155,8 @@ private fun Chart(
             currentState.copy(visibleBarCount = visibleBarCount, scrollBy = scrollBy)
         )
     }
+
+    val textMeasurer = rememberTextMeasurer()
 
     Canvas(
         modifier = modifier
@@ -177,6 +185,17 @@ private fun Chart(
             currentState.bars.forEachIndexed { index, bar ->
                 val offsetX = size.width - index * currentState.barWidth
 
+                drawTimeDelimiter(
+                    currentBar = bar,
+                    nextBar = if (index < currentState.bars.size - 1) {
+                        currentState.bars[index + 1]
+                    } else {
+                        null
+                    },
+                    timeFrame = timeFrame,
+                    offsetX = offsetX,
+                    textMeasurer = textMeasurer,
+                )
                 drawLine(
                     color = Color.White,
                     start = Offset(offsetX, size.height - ((bar.low - min) * pxPerPoint)),
@@ -224,6 +243,72 @@ private fun Prices(
             textMeasurer = textMeasurer,
         )
     }
+}
+
+@OptIn(ExperimentalTextApi::class)
+private fun DrawScope.drawTimeDelimiter(
+    currentBar: Bar,
+    nextBar: Bar?,
+    timeFrame: TimeFrame,
+    offsetX: Float,
+    textMeasurer: TextMeasurer,
+) {
+    val calendar = currentBar.calendar
+    val minutes = calendar.get(Calendar.MINUTE)
+    val hours = calendar.get(Calendar.HOUR_OF_DAY)
+    val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+    val delimiterNeeded = when (timeFrame) {
+        MIN_5 -> {
+            minutes == 0
+        }
+
+        MIN_15 -> {
+            minutes == 0 && hours % 2 == 0
+        }
+
+        MIN_30, HOUR_1 -> {
+            val nextBarDay = nextBar?.calendar?.get(Calendar.DAY_OF_MONTH)
+            day != nextBarDay
+        }
+    }
+
+    if (!delimiterNeeded)
+        return
+
+    drawLine(
+        color = Color.White.copy(alpha = 0.5f),
+        start = Offset(offsetX, 0f),
+        end = Offset(offsetX, size.height),
+        strokeWidth = 1f,
+        pathEffect = PathEffect.dashPathEffect(
+            intervals = floatArrayOf(4.dp.toPx(), 4.dp.toPx())
+        ),
+    )
+
+    val monthName = calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault())
+
+    val text = when (timeFrame) {
+        MIN_5, MIN_15 -> {
+            String.format("%02d:00", hours)
+        }
+
+        MIN_30, HOUR_1 -> {
+            String.format("%s %s:00", day, monthName)
+        }
+    }
+
+    val textLayoutResult = textMeasurer.measure(
+        text = text,
+        style = TextStyle(
+            color = Color.White,
+            fontSize = 12.sp,
+        ),
+    )
+    drawText(
+        textLayoutResult = textLayoutResult,
+        topLeft = Offset(offsetX - textLayoutResult.size.width / 2, size.height),
+    )
 }
 
 @OptIn(ExperimentalTextApi::class)
