@@ -2,7 +2,7 @@ package com.elmirov.terminal.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.elmirov.terminal.data.network.ApiFactory
+import com.elmirov.terminal.data.network.KtorClient
 import com.elmirov.terminal.presentation.TerminalScreenState.Content
 import com.elmirov.terminal.presentation.TerminalScreenState.Initial
 import com.elmirov.terminal.presentation.TerminalScreenState.Loading
@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 
 class TerminalViewModel : ViewModel() {
 
-    private val apiService = ApiFactory.apiService
+    private val apiService = KtorClient
 
     private val _state = MutableStateFlow<TerminalScreenState>(Initial)
     val state = _state.asStateFlow()
